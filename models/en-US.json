@@ -3,7 +3,54 @@
     "languageModel": {
       "invocationName": "atlas",
       "types": [
-
+        {
+          "name": "FEATURE_STATE",
+          "values": [
+            {
+              "id": "ENABLED",
+              "name": {
+                "value": "ENABLED",
+                "synonyms": [
+                  "enabled",
+                  "on"
+                ]
+              }
+            },
+            {
+              "id": "DISABLED",
+              "name": {
+                "value": "DISABLED",
+                "synonyms": [
+                  "disabled",
+                  "off"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "READ_PREFERENCE",
+          "values": [
+            {
+              "id": "PRIMARY",
+              "name": {
+                "value": "PRIMARY",
+                "synonyms": [
+                  "primary"
+                ]
+              }
+            },
+            {
+              "id": "SECONDARY",
+              "name": {
+                "value": "SECONDARY",
+                "synonyms": [
+                  "secondary"
+                ]
+              }
+            }
+          ]
+        }        
       ],
       "intents": [
         {
@@ -85,10 +132,42 @@
 
           ],
           "samples": [
+            "what is the overview of the cluster",
+            "what is the overview of this cluster",
             "what is the cluster overview",
-            "give me an overview of this cluster"
+            "give me an overview of this cluster",
+            "give me an overview of the cluster"
           ]
-        }    
+        },
+        {
+          "name": "ClusterStatus",
+          "slots": [
+
+          ],
+          "samples": [
+            "what is the status of this cluster",
+            "what is the status of the cluster",
+            "give me the status this cluster",
+            "give me the status the cluster"
+          ]
+        },
+        {
+          "name": "SetBIConnectorState",
+          "slots": [
+            {
+              "name": "featureState",
+              "type": "FEATURE_STATE"
+            },
+            {
+              "name": "readPreference",
+              "type": "READ_PREFERENCE"
+            }
+          ],
+          "samples": [
+            "set the b.i. connector to {featureState}",
+            "set the b.i. connector to {featureState} with a read preference of {readPreference}"
+          ]
+        }
       ]
     }
   }

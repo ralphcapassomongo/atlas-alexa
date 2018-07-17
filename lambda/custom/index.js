@@ -4,6 +4,7 @@
 const Alexa = require('ask-sdk-core');
 const groupsService = require('./groupsService');
 const clustersService = require('./clustersService');
+const processesService = require('./processesService');
 
 
 const LaunchRequestHandler = {
@@ -192,10 +193,10 @@ const ClusterOverviewIntentHandler = {
       .getResponse();
     }
 
-    let speechText = `${cluster.name} is a ${cluster.replicationFactor * cluster.numShards} node ${cluster.type} of instance size ${cluster.providerSettings.instanceSizeName} running MongoDB ${cluster.mongoDBVersion}.`
-    speechText += `${' '}The cluster is deployed on the ${providerSettings.providerName} platform in the ${providerSettings.regionName} region.`;
+    let speechText = `${cluster.name} is a ${cluster.replicationFactor * cluster.numShards} node ${cluster.clusterType} cluster with an instance size of ${cluster.providerSettings.instanceSizeName}, running MongoDB version ${cluster.mongoDBVersion}.`
+    speechText += `${' '}The cluster is deployed on the ${cluster.providerSettings.providerName} platform in the ${cluster.providerSettings.regionName.replace('_', ' ')} region.`;
     speechText += `${' '}Backups are ${cluster.backupEnabled ? 'enabled': 'disabled'}.`;
-    speechText += `${' '}The BI Connector is ${biConnector.enabled ? 'enabled' : 'disabled'}.`;
+    speechText += `${' '}The B.I. Connector is ${cluster.biConnector.enabled ? 'enabled' : 'disabled'}.`;
 
     return handlerInput.responseBuilder
     .speak(speechText)
@@ -204,6 +205,90 @@ const ClusterOverviewIntentHandler = {
     .getResponse();
   }
 }
+
+const ClusterStatusIntentHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'ClusterStatus';
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+    const cluster = sessionAttributes.cluster;
+    
+    if (!cluster) {
+      const speechText = `Please select a cluster.  You can say use cluster at index.`;
+      return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+    }
+
+    /*
+    const group = sessionAttributes.group;
+    const processes = processesService.fetchProcesses(group.id, cluster.name);
+    const connections =Promise.all(processes.then(async p => {
+      await processesService.fetchMeasurementsForProcess(group.id, p.hostname, p.port, ['CONNECTIONS'], 'PT1M', 'PT1M');
+      return 1;
+    }));
+    */
+
+    // let speechText = `${cluster.name} is currently in a${cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING'? 'n':'' } ${cluster.stateName} state with ${connections} open connections.`;
+    let speechText = `${cluster.name} is currently in a${cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING'? 'n':'' } ${cluster.stateName} state.`;
+
+    return handlerInput.responseBuilder
+    .speak(speechText)
+    .reprompt(speechText)
+    .withSimpleCard('Atlas', speechText)
+    .getResponse();
+  }
+}
+
+const SetBIConnectorStateIntentHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'SetBIConnectorState';
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+    const group = sessionAttributes.group;
+    const cluster = sessionAttributes.cluster;
+
+    if (!cluster) {
+      const speechText = `Please select a cluster.  You can say use cluster at index.`;
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const enabledValue = request.intent.slots.biConnectorState.value;
+    const enabled = enabledValue === 'ENABLED';
+    const readPreference = enabled ? request.intent.readPreference.value : undefined;    
+
+    const update = {
+      biConnector: {
+        enabled,
+        readPreference,
+      }
+    };
+
+    const updatedCluster = await clustersService.updateCluster(group.id, cluster.name, update);
+    const speechText = `The B.I. Connector is now set to ${updatedCluster.biConnector.enabled? 'enabled': 'disabled'} with a read preference of ${updatedCluster.biConnector.readPreference} on ${cluster.name}.`;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  }
+}
+
 
 const HelpIntentHandler = {
   canHandle(handlerInput) {
@@ -274,6 +359,8 @@ exports.handler = skillBuilder
     ListClustersIntentHandler,
     SetActiveClusterIntentHandler,
     ClusterOverviewIntentHandler,
+    ClusterStatusIntentHandler,
+    SetBIConnectorStateIntentHandler,    
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler
   )
