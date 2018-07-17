@@ -1,2 +1,2 @@
 # atlas-alexa
-Alexa Skil for MongoDB Atlas
+Alexa Skill for MongoDB Atlas

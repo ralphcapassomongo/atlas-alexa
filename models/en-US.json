@@ -34,7 +34,61 @@
             "say hello",
             "say hello world"
           ]
-        }
+        },
+        {
+          "name": "ListProjects",
+          "slots": [
+
+          ],
+          "samples": [
+            "list projects"
+          ]
+        },
+        {
+          "name": "SetActiveProject",
+          "slots": [
+            {
+              "name": "index",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "use project at index {index}",
+            "select project at index {index}"
+          ]
+        },
+        {
+          "name": "ListClusters",
+          "slots": [
+
+          ],
+          "samples": [
+            "list clusters"
+          ]
+        },
+        {
+          "name": "SetActiveCluster",
+          "slots": [
+            {
+              "name": "index",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "use cluster at index {index}",
+            "select cluster at index {index}"
+          ]
+        },
+        {
+          "name": "ClusterOverview",
+          "slots": [
+
+          ],
+          "samples": [
+            "what is the cluster overview",
+            "give me an overview of this cluster"
+          ]
+        }    
       ]
     }
   }

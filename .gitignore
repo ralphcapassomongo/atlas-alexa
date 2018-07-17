@@ -1,5 +1,4 @@
 # ask-cli config folder
 .ask
-/config/*.yml
-!/config/dev.yml
-!/config/prod.yml
+/lambda/config/config.json
+node_modules
