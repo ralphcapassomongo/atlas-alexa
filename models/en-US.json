@@ -50,31 +50,27 @@
               }
             }
           ]
-        }        
+        }
       ],
       "intents": [
         {
           "name": "AMAZON.CancelIntent",
           "samples": [
-
           ]
         },
         {
           "name": "AMAZON.HelpIntent",
           "samples": [
-
           ]
         },
         {
           "name": "AMAZON.StopIntent",
           "samples": [
-
           ]
         },
         {
           "name": "HelloWorldIntent",
           "slots": [
-
           ],
           "samples": [
             "hello",
@@ -85,7 +81,6 @@
         {
           "name": "ListProjects",
           "slots": [
-
           ],
           "samples": [
             "list projects"
@@ -107,7 +102,6 @@
         {
           "name": "ListClusters",
           "slots": [
-
           ],
           "samples": [
             "list clusters"
@@ -129,7 +123,6 @@
         {
           "name": "ClusterOverview",
           "slots": [
-
           ],
           "samples": [
             "what is the overview of the cluster",
@@ -142,7 +135,6 @@
         {
           "name": "ClusterStatus",
           "slots": [
-
           ],
           "samples": [
             "what is the status of this cluster",
@@ -166,6 +158,37 @@
           "samples": [
             "set the b.i. connector to {featureState}",
             "set the b.i. connector to {featureState} with a read preference of {readPreference}"
+          ]
+        },
+        {
+          "name": "DisableAutoScaling",
+          "slots": [
+          ],
+          "samples": [
+            "disable auto scaling",
+            "remove auto scaling"
+          ]
+        },
+        {
+          "name": "EnableAutoScaling",
+          "slots": [
+          ],
+          "samples": [
+            "enable auto scaling",
+            "add auto scaling"
+          ]
+        },
+        {
+          "name": "SetNumShards",
+          "slots": [
+            {
+              "name": "numShards",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "set the number of shards to {numShards}",
+            "change the number of shards to {numShards}"
           ]
         }
       ]
