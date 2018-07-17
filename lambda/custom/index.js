@@ -140,11 +140,12 @@ const SetActiveClusterIntentHandler = {
   },
 
   async handle(handlerInput) {
-    const clusters = await clustersService.fetchClusters();
-
-    const request = handlerInput.requestEnvelope.request;
     const { attributesManager } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
+    const group = sessionAttributes.group;
+    const clusters = await clustersService.fetchClusters(group.id);
+
+    const request = handlerInput.requestEnvelope.request;
     const index = request.intent.slots.index.value;
     
     if (!clusters || index > clusters.length - 1) {
