@@ -85,10 +85,25 @@
 
           ],
           "samples": [
+            "what is the overview of the cluster",
+            "what is the overview of this cluster",
             "what is the cluster overview",
-            "give me an overview of this cluster"
+            "give me an overview of this cluster",
+            "give me an overview of the cluster"
           ]
-        }    
+        },
+        {
+          "name": "ClusterStatus",
+          "slots": [
+
+          ],
+          "samples": [
+            "what is the status of this cluster",
+            "what is the status of the cluster",
+            "give me the status this cluster",
+            "give me the status the cluster"
+          ]
+        }     
       ]
     }
   }
