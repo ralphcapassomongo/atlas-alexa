@@ -3,7 +3,54 @@
     "languageModel": {
       "invocationName": "atlas",
       "types": [
-
+        {
+          "name": "FEATURE_STATE",
+          "values": [
+            {
+              "id": "ENABLED",
+              "name": {
+                "value": "ENABLED",
+                "synonyms": [
+                  "enabled",
+                  "on"
+                ]
+              }
+            },
+            {
+              "id": "DISABLED",
+              "name": {
+                "value": "DISABLED",
+                "synonyms": [
+                  "disabled",
+                  "off"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "READ_PREFERENCE",
+          "values": [
+            {
+              "id": "PRIMARY",
+              "name": {
+                "value": "PRIMARY",
+                "synonyms": [
+                  "primary"
+                ]
+              }
+            },
+            {
+              "id": "SECONDARY",
+              "name": {
+                "value": "SECONDARY",
+                "synonyms": [
+                  "secondary"
+                ]
+              }
+            }
+          ]
+        }        
       ],
       "intents": [
         {
@@ -103,7 +150,24 @@
             "give me the status this cluster",
             "give me the status the cluster"
           ]
-        }     
+        },
+        {
+          "name": "SetBIConnectorState",
+          "slots": [
+            {
+              "name": "featureState",
+              "type": "FEATURE_STATE"
+            },
+            {
+              "name": "readPreference",
+              "type": "READ_PREFERENCE"
+            }
+          ],
+          "samples": [
+            "set the b.i. connector to {featureState}",
+            "set the b.i. connector to {featureState} with a read preference of {readPreference}"
+          ]
+        }
       ]
     }
   }
