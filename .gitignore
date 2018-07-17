@@ -1,4 +1,4 @@
 # ask-cli config folder
-.ask
+.ask/config
 /lambda/config/config.json
 node_modules

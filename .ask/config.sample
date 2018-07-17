@@ -1,0 +1,55 @@
+{
+  "deploy_settings": {
+    "mongodb-skunkworks": {
+      "skill_id": "",
+      "was_cloned": false,
+      "merge": {
+        "manifest": {
+          "apis": {
+            "custom": {
+              "endpoint": {
+                "uri": "ask-custom-atlas-alexa-mongodb-skunkworks"
+              }
+            }
+          }
+        }
+      }
+    },
+    "default": {
+      "skill_id": "amzn1.ask.skill.db4a1a36-4da2-48e8-a2d2-97acbb73fe28",
+      "was_cloned": false,
+      "merge": {
+        "manifest": {
+          "apis": {
+            "custom": {
+              "endpoint": {
+                "uri": "ask-custom-atlas-alexa-default"
+              }
+            }
+          }
+        }
+      },
+      "resources": {
+        "manifest": {
+          "eTag": "0872f53a9a87a9448a213f073bd88aea"
+        },
+        "interactionModel": {
+          "en-US": {
+            "eTag": "0ce58642ad06da9b2a4e68a447f78995"
+          }
+        },
+        "lambda": [
+          {
+            "arn": "arn:aws:lambda:us-east-1:358363220050:function:ask-custom-atlas-alexa-default",
+            "functionName": "arn:aws:lambda:us-east-1:358363220050:function:ask-custom-atlas-alexa-default",
+            "awsRegion": "us-east-1",
+            "alexaUsage": [
+              "custom/default"
+            ],
+            "revisionId": "7f3f11be-98e3-469d-ab4f-ae8a4f897d69"
+          }
+        ]
+      }
+    }
+  }
+}
