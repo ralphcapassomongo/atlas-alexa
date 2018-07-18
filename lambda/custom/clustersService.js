@@ -31,7 +31,7 @@ module.exports = {
       body: request,
     };
     return requestPromise(options).then(response => {
-      return response.results;
+      return response;
     });
   },
 };

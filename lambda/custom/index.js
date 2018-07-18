@@ -21,23 +21,6 @@ const LaunchRequestHandler = {
   },
 };
 
-const HelloWorldIntentHandler = {
-  canHandle(handlerInput) {
-    return (
-      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
-      handlerInput.requestEnvelope.request.intent.name === 'HelloWorldIntent'
-    );
-  },
-  handle(handlerInput) {
-    const speechText = 'Hello World, I am Ralph!';
-
-    return handlerInput.responseBuilder
-      .speak(speechText)
-      .withSimpleCard('Hello World', speechText)
-      .getResponse();
-  },
-};
-
 const ListProjectsIntentHandler = {
   canHandle(handlerInput) {
     return (
@@ -83,7 +66,7 @@ const SetActiveProjectIntentHandler = {
     const index = request.intent.slots.index.value;
 
     if (!groups || index > groups.length - 1) {
-      const speechText = `No cluster exists at index ${index}.`;
+      const speechText = `No project exists at index ${index}.`;
       return handlerInput.responseBuilder
         .speak(speechText)
         .reprompt(speechText)
@@ -155,6 +138,15 @@ const SetActiveClusterIntentHandler = {
     const { attributesManager } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
     const group = sessionAttributes.group;
+    if (!group) {
+      const speechText = 'No project selected.  You must select a project before you can select a cluster.';
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
     const clusters = await clustersService.fetchClusters(group.id);
 
     const request = handlerInput.requestEnvelope.request;
@@ -208,12 +200,12 @@ const ClusterOverviewIntentHandler = {
 
     let speechText = `${cluster.name} is a ${cluster.replicationFactor * cluster.numShards} node ${
       cluster.clusterType
-    } cluster with an instance size of ${cluster.providerSettings.instanceSizeName}, running MongoDB version ${
+      } cluster with an instance size of ${cluster.providerSettings.instanceSizeName}, running MongoDB version ${
       cluster.mongoDBVersion
-    }.`;
+      }.`;
     speechText += `${' '}The cluster is deployed on the ${
       cluster.providerSettings.providerName
-    } platform in the ${cluster.providerSettings.regionName.replace('_', ' ')} region.`;
+      } platform in the ${cluster.providerSettings.regionName.replace(/_/g, ' ')} region.`;
     speechText += `${' '}Backups are ${cluster.backupEnabled ? 'enabled' : 'disabled'}.`;
     speechText += `${' '}The B.I. Connector is ${cluster.biConnector.enabled ? 'enabled' : 'disabled'}.`;
 
@@ -232,7 +224,6 @@ const ClusterStatusIntentHandler = {
       handlerInput.requestEnvelope.request.intent.name === 'ClusterStatus'
     );
   },
-
   async handle(handlerInput) {
     const { attributesManager } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
@@ -248,6 +239,12 @@ const ClusterStatusIntentHandler = {
     }
 
     /*
+    const group = sessionAttributes.group;
+    const processes = await processesService.fetchProcesses(group.id, cluster.name);
+    console.log('processes:', processes.length);
+    */
+
+    /*
                     const group = sessionAttributes.group;
                     const processes = processesService.fetchProcesses(group.id, cluster.name);
                     const connections =Promise.all(processes.then(async p => {
@@ -259,7 +256,7 @@ const ClusterStatusIntentHandler = {
     // let speechText = `${cluster.name} is currently in a${cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING'? 'n':'' } ${cluster.stateName} state with ${connections} open connections.`;
     let speechText = `${cluster.name} is currently in a${
       cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING' ? 'n' : ''
-    } ${cluster.stateName} state.`;
+      } ${cluster.stateName} state.`;
 
     return handlerInput.responseBuilder
       .speak(speechText)
@@ -269,11 +266,11 @@ const ClusterStatusIntentHandler = {
   },
 };
 
-const SetBIConnectorStateIntentHandler = {
+const EnableBIConnectorIntentHandler = {
   canHandle(handlerInput) {
     return (
       handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
-      handlerInput.requestEnvelope.request.intent.name === 'SetBIConnectorState'
+      handlerInput.requestEnvelope.request.intent.name === 'EnableBIConnector'
     );
   },
 
@@ -292,21 +289,56 @@ const SetBIConnectorStateIntentHandler = {
         .getResponse();
     }
 
-    const enabledValue = request.intent.slots.biConnectorState.value;
-    const enabled = enabledValue === 'ENABLED';
-    const readPreference = enabled ? request.intent.readPreference.value : undefined;
-
+    const readPreferenceSlot = handlerInput.requestEnvelope.request.intent.readPreference;
     const update = {
       biConnector: {
-        enabled,
-        readPreference,
+        enabled: true,
+        readPreference: readPreferenceSlot && readPreferenceSlot.value, 
       },
     };
 
     const updatedCluster = await clustersService.updateCluster(group.id, cluster.name, update);
-    const speechText = `The B.I. Connector is now set to ${
-      updatedCluster.biConnector.enabled ? 'enabled' : 'disabled'
-    } with a read preference of ${updatedCluster.biConnector.readPreference} on ${cluster.name}.`;
+    const speechText = `The B.I. Connector is now enabled with a read preference of ${updatedCluster.biConnector.readPreference} on ${cluster.name}.`;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
+const DisableBIConnectorIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'DisableBIConnector'
+    );
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+    const group = sessionAttributes.group;
+    const cluster = sessionAttributes.cluster;
+
+    if (!cluster) {
+      const speechText = `Please select a cluster.  You can say use cluster at index.`;
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const update = {
+      biConnector: {
+        enabled: false,
+      },
+    };
+
+    await clustersService.updateCluster(group.id, cluster.name, update);
+    const speechText = `The B.I. Connector is now disabled.`;
 
     return handlerInput.responseBuilder
       .speak(speechText)
@@ -453,6 +485,116 @@ const SetNumShardsIntentHandler = {
   },
 };
 
+const WhereAmIIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'WhereAmI'
+    );
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+    const group = sessionAttributes.group;
+    if (!group) {
+      const speechText = `You are just getting started.  Please select a project.  Say list projects to get a list of all available projects.`;
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    let speechText = `You are in the project, ${group.name}.`;
+
+    const cluster = sessionAttributes.cluster;    
+    if (!cluster) {
+      speechText += `${' '}You have not selected a cluster.`;
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    speechText += `${' '}Cluster, ${cluster.name}, is selected.`;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
+const LeaveProjectIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'LeaveProject'
+    );
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+
+    const group = sessionAttributes.group;    
+    if (!group) {
+      const speechText = 'No project is selected.';
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const speechText = `Group, ${group.name}, is no longer selected.`;
+    sessionAttributes.group = undefined;
+    sessionAttributes.cluster = undefined;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
+const LeaveClusterIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'LeaveCluster'
+    );
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+
+    const cluster = sessionAttributes.cluster;    
+    if (!cluster) {
+      const speechText = 'No cluster is selected.';
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const speechText = `Cluster, ${cluster.name}, is no longer selected.`;
+    sessionAttributes.cluster = undefined;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
 const HelpIntentHandler = {
   canHandle(handlerInput) {
     return (
@@ -461,12 +603,12 @@ const HelpIntentHandler = {
     );
   },
   handle(handlerInput) {
-    const speechText = 'You can say hello to me!';
+    const speechText = 'Start by saying, list projects.';
 
     return handlerInput.responseBuilder
       .speak(speechText)
       .reprompt(speechText)
-      .withSimpleCard('Hello World', speechText)
+      .withSimpleCard('Atlas', speechText)
       .getResponse();
   },
 };
@@ -508,8 +650,8 @@ const ErrorHandler = {
     console.log(`Error handled: ${error.message}`);
 
     return handlerInput.responseBuilder
-      .speak("Sorry, I can't understand the command. Please say again.")
-      .reprompt("Sorry, I can't understand the command. Please say again.")
+      .speak("Sorry, I can't understand the command. Please try again.")
+      .reprompt("Sorry, I can't understand the command. Please try again.")
       .getResponse();
   },
 };
@@ -519,7 +661,6 @@ const skillBuilder = Alexa.SkillBuilders.custom();
 exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequestHandler,
-    HelloWorldIntentHandler,
     HelpIntentHandler,
     ListProjectsIntentHandler,
     SetActiveProjectIntentHandler,
@@ -527,12 +668,16 @@ exports.handler = skillBuilder
     SetActiveClusterIntentHandler,
     ClusterOverviewIntentHandler,
     ClusterStatusIntentHandler,
-    SetBIConnectorStateIntentHandler,
+    EnableBIConnectorIntentHandler,
+    DisableBIConnectorIntentHandler,
     CancelAndStopIntentHandler,
     SessionEndedRequestHandler,
     DisableAutoScalingIntentHandler,
     EnableAutoScalingIntentHandler,
-    SetNumShardsIntentHandler
+    SetNumShardsIntentHandler,
+    WhereAmIIntentHandler,
+    LeaveClusterIntentHandler,
+    LeaveProjectIntentHandler,
   )
   .addErrorHandlers(ErrorHandler)
   .lambda();

@@ -69,16 +69,6 @@
           ]
         },
         {
-          "name": "HelloWorldIntent",
-          "slots": [
-          ],
-          "samples": [
-            "hello",
-            "say hello",
-            "say hello world"
-          ]
-        },
-        {
           "name": "ListProjects",
           "slots": [
           ],
@@ -144,22 +134,26 @@
           ]
         },
         {
-          "name": "SetBIConnectorState",
-          "slots": [
-            {
-              "name": "featureState",
-              "type": "FEATURE_STATE"
-            },
+          "name": "EnableBIConnector",
+          "slots": [            
             {
               "name": "readPreference",
               "type": "READ_PREFERENCE"
             }
           ],
           "samples": [
-            "set the b.i. connector to {featureState}",
-            "set the b.i. connector to {featureState} with a read preference of {readPreference}"
+            "enable the b.i. connector",
+            "enable the b.i. connector with a read preference of {readPreference}"
           ]
         },
+        {
+          "name": "DisableBIConnector",
+          "slots": [
+          ],
+          "samples": [
+            "disable the b.i. connector"
+          ]
+        },        
         {
           "name": "DisableAutoScaling",
           "slots": [
@@ -189,6 +183,34 @@
           "samples": [
             "set the number of shards to {numShards}",
             "change the number of shards to {numShards}"
+          ]
+        },
+        {
+          "name": "WhereAmI",
+          "slots": [
+          ],
+          "samples": [
+            "where am i",
+            "help i am lost",
+            "i am lost"
+          ]
+        },
+        {
+          "name": "LeaveCluster",
+          "slots": [
+          ],
+          "samples": [
+            "leave cluster",
+            "leave this cluster"
+          ]
+        },
+        {
+          "name": "LeaveProject",
+          "slots": [
+          ],
+          "samples": [
+            "leave project",
+            "leave this project"
           ]
         }
       ]
