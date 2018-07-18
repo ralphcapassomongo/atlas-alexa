@@ -5,6 +5,7 @@ const Alexa = require('ask-sdk-core');
 const groupsService = require('./groupsService');
 const clustersService = require('./clustersService');
 const processesService = require('./processesService');
+const { ObjectID } = require('mongodb-extjson').BSON;
 
 const LaunchRequestHandler = {
   canHandle(handlerInput) {
@@ -200,12 +201,12 @@ const ClusterOverviewIntentHandler = {
 
     let speechText = `${cluster.name} is a ${cluster.replicationFactor * cluster.numShards} node ${
       cluster.clusterType
-      } cluster with an instance size of ${cluster.providerSettings.instanceSizeName}, running MongoDB version ${
+    } cluster with an instance size of ${cluster.providerSettings.instanceSizeName}, running MongoDB version ${
       cluster.mongoDBVersion
-      }.`;
+    }.`;
     speechText += `${' '}The cluster is deployed on the ${
       cluster.providerSettings.providerName
-      } platform in the ${cluster.providerSettings.regionName.replace(/_/g, ' ')} region.`;
+    } platform in the ${cluster.providerSettings.regionName.replace(/_/g, ' ')} region.`;
     speechText += `${' '}Backups are ${cluster.backupEnabled ? 'enabled' : 'disabled'}.`;
     speechText += `${' '}The B.I. Connector is ${cluster.biConnector.enabled ? 'enabled' : 'disabled'}.`;
 
@@ -239,24 +240,24 @@ const ClusterStatusIntentHandler = {
     }
 
     /*
-    const group = sessionAttributes.group;
-    const processes = await processesService.fetchProcesses(group.id, cluster.name);
-    console.log('processes:', processes.length);
-    */
+                                                                                const group = sessionAttributes.group;
+                                                                                const processes = await processesService.fetchProcesses(group.id, cluster.name);
+                                                                                console.log('processes:', processes.length);
+                                                                                */
 
     /*
-                    const group = sessionAttributes.group;
-                    const processes = processesService.fetchProcesses(group.id, cluster.name);
-                    const connections =Promise.all(processes.then(async p => {
-                      await processesService.fetchMeasurementsForProcess(group.id, p.hostname, p.port, ['CONNECTIONS'], 'PT1M', 'PT1M');
-                      return 1;
-                    }));
-                    */
+                                                                                                const group = sessionAttributes.group;
+                                                                                                const processes = processesService.fetchProcesses(group.id, cluster.name);
+                                                                                                const connections =Promise.all(processes.then(async p => {
+                                                                                                  await processesService.fetchMeasurementsForProcess(group.id, p.hostname, p.port, ['CONNECTIONS'], 'PT1M', 'PT1M');
+                                                                                                  return 1;
+                                                                                                }));
+                                                                                                */
 
     // let speechText = `${cluster.name} is currently in a${cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING'? 'n':'' } ${cluster.stateName} state with ${connections} open connections.`;
     let speechText = `${cluster.name} is currently in a${
       cluster.stateName === 'IDLE' || cluster.stateName === 'UPDATING' ? 'n' : ''
-      } ${cluster.stateName} state.`;
+    } ${cluster.stateName} state.`;
 
     return handlerInput.responseBuilder
       .speak(speechText)
@@ -293,12 +294,14 @@ const EnableBIConnectorIntentHandler = {
     const update = {
       biConnector: {
         enabled: true,
-        readPreference: readPreferenceSlot && readPreferenceSlot.value, 
+        readPreference: readPreferenceSlot && readPreferenceSlot.value,
       },
     };
 
     const updatedCluster = await clustersService.updateCluster(group.id, cluster.name, update);
-    const speechText = `The B.I. Connector is now enabled with a read preference of ${updatedCluster.biConnector.readPreference} on ${cluster.name}.`;
+    const speechText = `The B.I. Connector is now enabled with a read preference of ${
+      updatedCluster.biConnector.readPreference
+    } on ${cluster.name}.`;
 
     return handlerInput.responseBuilder
       .speak(speechText)
@@ -485,6 +488,140 @@ const SetNumShardsIntentHandler = {
   },
 };
 
+const CreateClusterIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'CreateCluster'
+    );
+  },
+
+  async handle(handlerInput) {
+    const { attributesManager } = handlerInput;
+    const sessionAttributes = attributesManager.getSessionAttributes();
+    const group = sessionAttributes.group;
+    if (!group) {
+      const speechText = 'No project selected.  You must select a project before you can create a cluster.';
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const slots = handlerInput.requestEnvelope.request.intent.slots;
+    const name = `TestCluster${Math.floor(Math.random() * 100)}`;
+    const instanceSizeName = slots.instanceSize.value.toUpperCase();
+    const providerName = slots.cloudProvider.value.toUpperCase();
+
+    const regionValue = slots.usState.value.toLowerCase();
+
+    let regionKey;
+    switch (providerName) {
+      case 'AWS':
+        switch (regionValue) {
+          case 'virginia':
+            regionKey = 'US_EAST_1';
+            break;
+          case 'ohio':
+            regionKey = 'US_EAST_2';
+            break;
+          case 'california':
+            regionKey = 'US_WEST_1';
+            break;
+          case 'oregon':
+            regionKey = 'US_WEST_2';
+            break;
+          default:
+            break;
+        }
+        break;
+      case 'AZURE':
+        switch (regionValue) {
+          case 'iowa':
+            regionKey = 'US_CENTRAL';
+            break;
+          case 'virginia':
+            regionKey = 'US_EAST_2';
+            break;
+          case 'illinois':
+            regionKey = 'US_NORTH_CENTRAL';
+            break;
+          case 'california':
+            regionKey = 'US_WEST';
+            break;
+          case 'texas':
+            regionKey = 'US_SOUTH_CENTRAL';
+            break;
+          default:
+            break;
+        }
+        break;
+      case 'GCP':
+        switch (regionValue) {
+          case 'south carolina':
+            regionKey = 'EASTERN_US';
+            break;
+          case 'virginia':
+            regionKey = 'US_EAST_4';
+            break;
+          case 'iowa':
+            regionKey = 'CENTRAL_US';
+            break;
+          case 'oregon':
+            regionKey = 'WESTERN_US';
+            break;
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (!regionKey) {
+      const speechText = `A cluster cannot be created in the mentioned state. Please try again with a valid state.`;
+      return handlerInput.responseBuilder
+        .speak(speechText)
+        .reprompt(speechText)
+        .withSimpleCard('Atlas', speechText)
+        .getResponse();
+    }
+
+    const regionSpec = {};
+    regionSpec[regionKey] = {
+      electableNodes: 3,
+      readOnlyNodes: 0,
+      priority: 7,
+    };
+    const replicationSpec = {
+      id: new ObjectID().toString(),
+      zoneName: 'Zone 1',
+      numShards: 1,
+      regionsConfig: regionSpec,
+    };
+
+    const create = {
+      name,
+      providerSettings: {
+        providerName,
+        instanceSizeName,
+      },
+      replicationSpecs: [replicationSpec],
+      clusterType: 'REPLICASET',
+    };
+
+    await clustersService.createCluster(group.id, create);
+    const speechText = `The new cluster named ${name} is now being created.`;
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
 const WhereAmIIntentHandler = {
   canHandle(handlerInput) {
     return (
@@ -508,7 +645,7 @@ const WhereAmIIntentHandler = {
 
     let speechText = `You are in the project, ${group.name}.`;
 
-    const cluster = sessionAttributes.cluster;    
+    const cluster = sessionAttributes.cluster;
     if (!cluster) {
       speechText += `${' '}You have not selected a cluster.`;
       return handlerInput.responseBuilder
@@ -540,7 +677,7 @@ const LeaveProjectIntentHandler = {
     const { attributesManager } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
 
-    const group = sessionAttributes.group;    
+    const group = sessionAttributes.group;
     if (!group) {
       const speechText = 'No project is selected.';
       return handlerInput.responseBuilder
@@ -574,7 +711,7 @@ const LeaveClusterIntentHandler = {
     const { attributesManager } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
 
-    const cluster = sessionAttributes.cluster;    
+    const cluster = sessionAttributes.cluster;
     if (!cluster) {
       const speechText = 'No cluster is selected.';
       return handlerInput.responseBuilder
@@ -678,6 +815,7 @@ exports.handler = skillBuilder
     WhereAmIIntentHandler,
     LeaveClusterIntentHandler,
     LeaveProjectIntentHandler,
+    CreateClusterIntentHandler
   )
   .addErrorHandlers(ErrorHandler)
   .lambda();
