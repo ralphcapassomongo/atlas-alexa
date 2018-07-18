@@ -17,6 +17,24 @@ module.exports = {
     });
   },
 
+  createCluster(groupId, request) {
+    console.log('request', request);
+    const options = {
+      uri: `${config.atlas.url}/groups/${groupId}/clusters`,
+      method: 'POST',
+      json: true,
+      auth: {
+        user: config.atlas.username,
+        pass: config.atlas.apiKey,
+        sendImmediately: false,
+      },
+      body: request,
+    };
+    return requestPromise(options).then(response => {
+      return response;
+    });
+  },
+
   updateCluster(groupId, clusterName, request) {
     console.log('request:', request);
     const options = {

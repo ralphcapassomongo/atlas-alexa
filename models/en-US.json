@@ -50,6 +50,130 @@
               }
             }
           ]
+        },
+        {
+          "name": "INSTANCE_SIZE",
+          "values": [
+            {
+              "id": "M10",
+              "name": {
+                "value": "M10",
+                "synonyms": [
+                  "m10",
+                  "em 10",
+                  "m 10"
+                ]
+              }
+            },
+            {
+              "id": "M20",
+              "name": {
+                "value": "M20",
+                "synonyms": [
+                  "m20",
+                  "em 20",
+                  "m 20"
+                ]
+              }
+            },
+            {
+              "id": "M30",
+              "name": {
+                "value": "M30",
+                "synonyms": [
+                  "m30",
+                  "em 30",
+                  "m 30"
+                ]
+              }
+            },
+            {
+              "id": "M40",
+              "name": {
+                "value": "M40",
+                "synonyms": [
+                  "m40",
+                  "em 40",
+                  "m 40"
+                ]
+              }
+            },
+            {
+              "id": "M50",
+              "name": {
+                "value": "M50",
+                "synonyms": [
+                  "m50",
+                  "em 50",
+                  "m 50"
+                ]
+              }
+            },
+            {
+              "id": "M60",
+              "name": {
+                "value": "M60",
+                "synonyms": [
+                  "m60",
+                  "em 60",
+                  "m 60"
+                ]
+              }
+            },
+            {
+              "id": "M100",
+              "name": {
+                "value": "M100",
+                "synonyms": [
+                  "m100",
+                  "em 100",
+                  "m 100"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CLOUD_PROVIDER",
+          "values": [
+            {
+              "id": "AWS",
+              "name": {
+                "value": "AWS",
+                "synonyms": [
+                  "aws",
+                  "a w s",
+                  "a double u s"
+                ]
+              }
+            },
+            {
+              "id": "AZURE",
+              "name": {
+                "value": "AZURE",
+                "synonyms": [
+                  "azure"
+                ]
+              }
+            },
+            {
+              "id": "GCP",
+              "name": {
+                "value": "GCP",
+                "synonyms": [
+                  "gcp",
+                  "g c p",
+                  "gee c p",
+                  "gee see p",
+                  "gee see pee",
+                  "gee c pee",
+                  "g c pee",
+                  "g see pee",
+                  "g see p"
+                ]
+              }
+            }
+          ]
         }
       ],
       "intents": [
@@ -135,7 +259,7 @@
         },
         {
           "name": "EnableBIConnector",
-          "slots": [            
+          "slots": [
             {
               "name": "readPreference",
               "type": "READ_PREFERENCE"
@@ -153,7 +277,7 @@
           "samples": [
             "disable the b.i. connector"
           ]
-        },        
+        },
         {
           "name": "DisableAutoScaling",
           "slots": [
@@ -183,6 +307,28 @@
           "samples": [
             "set the number of shards to {numShards}",
             "change the number of shards to {numShards}"
+          ]
+        },
+        {
+          "name": "CreateCluster",
+          "slots": [
+            {
+              "name": "cloudProvider",
+              "type": "CLOUD_PROVIDER"
+            },
+            {
+              "name": "instanceSize",
+              "type": "INSTANCE_SIZE"
+            },
+            {
+              "name": "usState",
+              "type": "AMAZON.US_STATE"
+            }
+          ],
+          "samples": [
+            "create an {instanceSize} cluster in {cloudProvider} located in {usState}",
+            "provision an {instanceSize} cluster in {cloudProvider} located in {usState}",
+            "spin up an {instanceSize} cluster in {cloudProvider} located in {usState}"
           ]
         },
         {
