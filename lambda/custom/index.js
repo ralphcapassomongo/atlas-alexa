@@ -207,6 +207,7 @@ const ClusterOverviewIntentHandler = {
     speechText += `${' '}The cluster is deployed on the ${
       cluster.providerSettings.providerName
     } platform in the ${cluster.providerSettings.regionName.replace(/_/g, ' ')} region.`;
+    speechText += `${' '}Disk auto scaling is ${cluster.autoScaling.diskGBEnabled ? 'enabled' : 'disabled'}.`;
     speechText += `${' '}Backups are ${cluster.backupEnabled ? 'enabled' : 'disabled'}.`;
     speechText += `${' '}The B.I. Connector is ${cluster.biConnector.enabled ? 'enabled' : 'disabled'}.`;
 
@@ -511,7 +512,7 @@ const CreateClusterIntentHandler = {
 
     const slots = handlerInput.requestEnvelope.request.intent.slots;
     const name = `TestCluster${Math.floor(Math.random() * 100)}`;
-    const instanceSizeName = slots.instanceSize.value.toUpperCase();
+    const instanceSizeName = slots.instanceSize ? slots.instanceSize.value.toUpperCase(): 'M10';
     const providerName = slots.cloudProvider.value.toUpperCase();
 
     const regionValue = slots.usState.value.toLowerCase();
@@ -854,12 +855,9 @@ exports.handler = skillBuilder
     WhereAmIIntentHandler,
     LeaveClusterIntentHandler,
     LeaveProjectIntentHandler,
-<<<<<<< HEAD
     TerminateAllClustersIntentHandler,
     ThankYouIntentHandler,
-=======
     CreateClusterIntentHandler
->>>>>>> 109dadec955fc6352cded1771718bb9bd4c53691
   )
   .addErrorHandlers(ErrorHandler)
   .lambda();
