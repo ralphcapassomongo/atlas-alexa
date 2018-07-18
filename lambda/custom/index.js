@@ -11,7 +11,7 @@ const LaunchRequestHandler = {
     return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
   },
   handle(handlerInput) {
-    const speechText = "Welcome to MongoDB Atlas!  You're going to love it here!";
+    const speechText = "Welcome to MongoDB Atlas!  I am excited to work with you!";
 
     return handlerInput.responseBuilder
       .speak(speechText)
@@ -595,6 +595,44 @@ const LeaveClusterIntentHandler = {
   },
 };
 
+const TerminateAllClustersIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'TerminateAllClusters'
+    );
+  },
+
+  async handle(handlerInput) {
+    const speechText = "I realize that we are good friends, but I can't in good conscience terminate all of the clusters.  If you really wish to throw it all away, please use the UI.  It is much more amenable to such requests.";
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
+const ThankYouIntentHandler = {
+  canHandle(handlerInput) {
+    return (
+      handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+      handlerInput.requestEnvelope.request.intent.name === 'ThankYou'
+    );
+  },
+
+  async handle(handlerInput) {
+    const speechText = 'My pleasure.  Is there anythig else I can assist you with?';
+
+    return handlerInput.responseBuilder
+      .speak(speechText)
+      .reprompt(speechText)
+      .withSimpleCard('Atlas', speechText)
+      .getResponse();
+  },
+};
+
 const HelpIntentHandler = {
   canHandle(handlerInput) {
     return (
@@ -618,15 +656,16 @@ const CancelAndStopIntentHandler = {
     return (
       handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
       (handlerInput.requestEnvelope.request.intent.name === 'AMAZON.CancelIntent' ||
-        handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent')
+        handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent' ||
+        handlerInput.requestEnvelope.request.intent.name === 'Done')
     );
   },
   handle(handlerInput) {
-    const speechText = 'Goodbye!';
+    const speechText = 'Thank you for using MongoDB Atlas!  I really enjoyed our time together.';
 
     return handlerInput.responseBuilder
       .speak(speechText)
-      .withSimpleCard('Hello World', speechText)
+      .withSimpleCard('Atlas', speechText)
       .getResponse();
   },
 };
@@ -678,6 +717,8 @@ exports.handler = skillBuilder
     WhereAmIIntentHandler,
     LeaveClusterIntentHandler,
     LeaveProjectIntentHandler,
+    TerminateAllClustersIntentHandler,
+    ThankYouIntentHandler,
   )
   .addErrorHandlers(ErrorHandler)
   .lambda();

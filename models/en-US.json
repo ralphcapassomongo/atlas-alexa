@@ -142,8 +142,8 @@
             }
           ],
           "samples": [
-            "enable the b.i. connector",
-            "enable the b.i. connector with a read preference of {readPreference}"
+            "enable the b.i. connector with a read preference of {readPreference}",
+            "enable the b.i. connector"
           ]
         },
         {
@@ -211,6 +211,32 @@
           "samples": [
             "leave project",
             "leave this project"
+          ]
+        },
+        {
+          "name": "Done",
+          "slots": [
+          ],
+          "samples": [
+            "i'm done",
+            "i am done",
+            "that's all for now"
+          ]
+        },
+        {
+          "name": "TerminateAllClusters",
+          "slots": [
+          ],
+          "samples": [
+            "terminate all clusters"
+          ]
+        },
+        {
+          "name": "ThankYou",
+          "slots": [
+          ],
+          "samples": [
+            "thank you"
           ]
         }
       ]
